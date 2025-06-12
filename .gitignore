@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# text
+*.txt
+
+# actions
+*.action.ts
+
+# vapi
+vapi.d.ts
