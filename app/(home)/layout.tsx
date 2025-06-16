@@ -1,9 +1,13 @@
-import React, { ReactNode } from 'react'
+import Navbar from '@/components/Navbar';
+import React, { ReactNode } from 'react';
 
-const HomeLayout = ({children}: {children: ReactNode}) => {
+const HomeLayout = ({ children }: { children: ReactNode }) => {
   return (
-    <div>{children}</div>
-  )
-}
+    <div className="root-layout">
+      <Navbar />
+      {children}
+    </div>
+  );
+};
 
-export default HomeLayout
+export default HomeLayout;
