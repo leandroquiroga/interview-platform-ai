@@ -23,7 +23,6 @@ const initFirebaseAdmin = () => {
       if (!privateKey) throw new Error("FIREBASE_PRIVATE_KEY is not defined");
 
       const processedKey = privateKey.replace(/\\n/g, '\n');
-      console.log("Processed Private Key (first 50 chars):", processedKey.slice(0, 50));
 
       initializeApp({
         credential: cert({
@@ -34,14 +33,15 @@ const initFirebaseAdmin = () => {
       });
       console.log("Firebase Admin initialized successfully");
     }
+    const db = getFirestore();
 
     return {
       auth: getAuth(),
-      db: getFirestore(),
+      db,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error initializing Firebase Admin:", error);
-    throw error;
+    throw new Error(`Failed to initialize Firebase Admin: ${error.message}`);
   }
 };
 
