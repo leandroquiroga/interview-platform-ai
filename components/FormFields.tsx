@@ -9,7 +9,6 @@ import {
 import { Input } from './ui/input';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 
-type FormFieldType = 'text' | 'email' | 'password' | 'file';
 interface FormFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
