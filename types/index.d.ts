@@ -97,3 +97,6 @@ interface InterviewFormProps {
 interface TechIconProps {
   techStack: string[];
 }
+
+type AuthFormData = z.infer<ReturnType<typeof authFormSchema>>;
+type FormFieldType = 'text' | 'email' | 'password' | 'file';
