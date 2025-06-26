@@ -1,22 +1,18 @@
 import { auth } from "@/firebase/client";
-import { signIn, signUp } from "@/utils/functions/auth.action";
+import { signIn, signOut, signUp } from "@/utils/functions/auth.action";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-interface FormData {
-  name?: string;
-  email: string;
-  password: string;
-}
-
 /**
  * Custom hook para manejar la autenticación de usuarios.
  * Permite registrar nuevos usuarios ("sign-up") o iniciar sesión ("sign-in")
+ * Permite manejar el cierre de sesión ("sign-out") de manera sencilla,
  * utilizando Firebase Authentication y funciones auxiliares personalizadas.
  * 
  * - En "sign-up": crea el usuario en Firebase, luego lo registra en la base de datos propia.
  * - En "sign-in": autentica el usuario y obtiene el token de sesión.
+ * - En "sign-out": cierra la sesión del usuario y lo desautentica.
  * 
  * Muestra notificaciones de éxito o error usando la librería "sonner"
  * y redirige al usuario según el resultado de la operación.
@@ -71,6 +67,19 @@ export const useAuth = (type: FormType) => {
     }
   }
 
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut();
+      await signOut();
+      toast.success("Sign out successful");
+      router.push("/sign-in");
+      return;
+    } catch (error) {
+      console.log("Error during sign out:", error);
+      toast.error(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 
-  return { handleAuth }
+  }
+
+  return { handleAuth, handleSignOut }
 }

@@ -120,11 +120,8 @@ export const setSession = async (idToken: string) => {
  */
 
 export const getCurrentUser = async (): Promise<User | null> => {
-
   const cookiesStore = await cookies();
-
   const sessionCookie = cookiesStore.get('session')?.value;
-
 
   if (!sessionCookie) return null;
 
@@ -157,3 +154,30 @@ export const isAuthenticated = async (): Promise<boolean> => {
   const user = await getCurrentUser();
   return !!user;
 };
+
+/**
+ * La función signOut cierra la sesión del usuario actual.
+ * Elimina la cookie de sesión del navegador y, opcionalmente, revoca la sesión en el servidor.
+ * Retorna un mensaje indicando si el cierre de sesión fue exitoso o si ocurrió un error.
+ */
+export const signOut = async () => {
+  const cookiesStore = await cookies();
+  const sessionCookies = cookiesStore.get('session')?.value;
+
+  if (!sessionCookies) return null;
+  try {
+    const decodedClaims = await auth.verifySessionCookie(sessionCookies, true);
+    await auth.revokeRefreshTokens(decodedClaims.uid);
+    cookiesStore.delete('session');
+    return {
+      success: true,
+      message: "Sign out successful. You can now sign in again."
+    }
+  } catch (error) {
+    console.error("Error during sign out:", error);
+    return {
+      success: false,
+      message: "An error occurred while signing out. Please try again later."
+    }
+  }
+}

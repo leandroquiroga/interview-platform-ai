@@ -100,3 +100,9 @@ interface TechIconProps {
 
 type AuthFormData = z.infer<ReturnType<typeof authFormSchema>>;
 type FormFieldType = 'text' | 'email' | 'password' | 'file';
+
+interface FormData {
+  name?: string;
+  email: string;
+  password: string;
+}
