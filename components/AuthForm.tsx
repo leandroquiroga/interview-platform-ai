@@ -6,10 +6,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import FormFields from './FormFields';
 import { useAuth, useAuthForm } from '@/hooks';
+import { Loader2Icon } from 'lucide-react';
 
 const AuthForm = ({ type }: { type: FormType }) => {
   const form = useAuthForm(type);
-  const { handleAuth } = useAuth(type);
+  const { handleAuth, isLoading } = useAuth(type);
 
   const onSubmit = async (data: AuthFormData) => {
     await handleAuth(data);
@@ -54,8 +55,14 @@ const AuthForm = ({ type }: { type: FormType }) => {
               type="password"
             />
             {/* <FormFields isSignIn={isSignIn} form={form} /> */}
-            <Button className="btn" type="submit">
-              {isSignIn ? 'Sign in' : 'Create account'}
+            <Button className="btn" type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <Loader2Icon className="animate-spin" />
+              ) : isSignIn ? (
+                'Sign in'
+              ) : (
+                'Create account'
+              )}
             </Button>
           </form>
         </Form>
@@ -65,7 +72,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
             href={`${!isSignIn ? '/sign-in' : '/sign-up'}`}
             className="font-bold text-user-primary ml-1"
           >
-            {isSignIn ? ' Create an account' : ' Sign in'}
+            {isSignIn ? 'Create an account' : 'Sign in'}
           </Link>
         </p>
       </div>
