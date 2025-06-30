@@ -2,6 +2,7 @@ import { auth } from "@/firebase/client";
 import { signIn, signOut, signUp } from "@/utils/functions/auth.action";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 /**
@@ -20,12 +21,13 @@ import { toast } from "sonner";
 
 export const useAuth = (type: FormType) => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleAuth = async (data: FormData) => {
     try {
       if (type === "sign-up") {
         const { name, email, password } = data;
-
+        setIsLoading(true);
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
         const result = await signUp({
@@ -42,10 +44,12 @@ export const useAuth = (type: FormType) => {
 
         toast.success("Sign up successful");
         router.push("/sign-in");
+        setIsLoading(false);
         return;
       }
 
       const { email, password } = data;
+      setIsLoading(true);
 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
@@ -60,8 +64,10 @@ export const useAuth = (type: FormType) => {
 
       toast.success("Sign in successful");
       router.push("/");
+      setIsLoading(false);
       return;
     } catch (error) {
+      setIsLoading(false);
       console.log("Error during authentication:", error);
       toast.error(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
@@ -69,17 +75,20 @@ export const useAuth = (type: FormType) => {
 
   const handleSignOut = async () => {
     try {
+      setIsLoading(true);
       await auth.signOut();
       await signOut();
       toast.success("Sign out successful");
       router.push("/sign-in");
+      setIsLoading(false);
       return;
     } catch (error) {
+      setIsLoading(false);
       console.log("Error during sign out:", error);
       toast.error(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 
   }
 
-  return { handleAuth, handleSignOut }
+  return { handleAuth, handleSignOut, isLoading }
 }
