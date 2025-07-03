@@ -1,9 +1,10 @@
-import { auth } from "@/firebase/client";
-import { signIn, signOut, signUp } from "@/utils/functions/auth.action";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "next/navigation";
+'use client';
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/firebase/client";
 import { toast } from "sonner";
+import { signIn, signOut, signUp } from "@/utils/functions/auth.action";
 
 /**
  * Custom hook para manejar la autenticación de usuarios.

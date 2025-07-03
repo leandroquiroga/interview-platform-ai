@@ -1,3 +1,4 @@
+"use client";
 import { useForm } from "react-hook-form";
 import { authFormSchema } from "@/utils/functions"
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,8 +10,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
  * @param type Tipo de formulario de autenticación (por ejemplo, login o registro).
  * @returns Métodos y estados del formulario proporcionados por useForm.
  */
-
-
 
 export const useAuthForm = (type: FormType) => {
   const formSchema = authFormSchema(type);
