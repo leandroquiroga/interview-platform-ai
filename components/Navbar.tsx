@@ -3,10 +3,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 import { Button } from './ui/button';
-import { useAuth } from '@/hooks';
+import { useAuth, useProfile } from '@/hooks';
 
 const Navbar = () => {
   const { handleSignOut } = useAuth('sign-in');
+  const { user } = useProfile();
+
+  console.log({ user });
 
   const handleLogout = async () => {
     await handleSignOut();
@@ -23,6 +26,11 @@ const Navbar = () => {
           <Button variant="outline" onClick={handleLogout}>
             Sign Out
           </Button>
+          {user && (
+            <div className="flex items-center gap-2">
+              <p className="text-sm">Hello! {user.name}</p>
+            </div>
+          )}
         </div>
       </Link>
     </nav>
