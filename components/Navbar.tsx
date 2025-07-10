@@ -9,8 +9,6 @@ const Navbar = () => {
   const { handleSignOut } = useAuth('sign-in');
   const { user } = useProfile();
 
-  console.log({ user });
-
   const handleLogout = async () => {
     await handleSignOut();
   };
