@@ -97,3 +97,22 @@ interface InterviewFormProps {
 interface TechIconProps {
   techStack: string[];
 }
+
+type AuthFormData = z.infer<ReturnType<typeof authFormSchema>>;
+type FormFieldType = 'text' | 'email' | 'password' | 'file';
+
+interface FormData {
+  name?: string;
+  email: string;
+  password: string;
+}
+
+interface BuildDynamicPromptParams {
+  role: string;
+  level: string;
+  techstack: string;
+  type: string;
+  amount: number;
+  language?: string;
+  questionStyle?: string;
+}

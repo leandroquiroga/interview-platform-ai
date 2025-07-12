@@ -1,88 +1,19 @@
 'use client';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import Image from 'next/image';
 import Link from 'next/link';
-import { authFormSchema } from '@/utils/functions';
-import { toast } from 'sonner';
 import FormFields from './FormFields';
-import { useRouter } from 'next/navigation';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { auth } from '@/firebase/client';
-import { signIn, signUp } from '@/lib/actions/auth.actions';
-
-type FormType = 'sign-in' | 'sign-up';
+import { useAuth, useAuthForm } from '@/hooks';
+import { Loader2Icon } from 'lucide-react';
 
 const AuthForm = ({ type }: { type: FormType }) => {
-  const router = useRouter();
-  const formSchema = authFormSchema(type);
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-    },
-  });
+  const form = useAuthForm(type);
+  const { handleAuth, isLoading } = useAuth(type);
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    try {
-      if (type === 'sign-up') {
-        const { name, email, password } = data;
-
-        const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-        const result = await signUp({
-          uid: userCredential.user.uid,
-          name: name!,
-          email,
-          password,
-        });
-
-        if (!result.success) {
-          toast.error(result.message);
-          return;
-        }
-
-        toast.success('Sign up successful!');
-        router.push('/sign-in');
-        return;
-      }
-
-      const { email, password } = data;
-
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const idToken = await userCredential.user.getIdToken();
-
-      if (!idToken) {
-        toast.error('Failed to retrieve user token. Please try again.');
-        return;
-      }
-
-      await signIn({ email, idToken });
-
-      toast.success('Sign in successful!');
-      router.push('/');
-    } catch (error) {
-      console.error('Error during form submission:', error);
-      toast.error(
-        `An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
+  const onSubmit = async (data: AuthFormData) => {
+    await handleAuth(data);
   };
 
   const isSignIn = type === 'sign-in';
@@ -124,8 +55,14 @@ const AuthForm = ({ type }: { type: FormType }) => {
               type="password"
             />
             {/* <FormFields isSignIn={isSignIn} form={form} /> */}
-            <Button className="btn" type="submit">
-              {isSignIn ? 'Sign in' : 'Create account'}
+            <Button className="btn" type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <Loader2Icon className="animate-spin" />
+              ) : isSignIn ? (
+                'Sign in'
+              ) : (
+                'Create account'
+              )}
             </Button>
           </form>
         </Form>
@@ -135,7 +72,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
             href={`${!isSignIn ? '/sign-in' : '/sign-up'}`}
             className="font-bold text-user-primary ml-1"
           >
-            {isSignIn ? ' Create an account' : ' Sign in'}
+            {isSignIn ? 'Create an account' : 'Sign in'}
           </Link>
         </p>
       </div>
