@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/firebase/client";
 import { toast } from "sonner";
-import { signIn, signOut, signUp } from "@/utils/functions/auth.action";
+import { signIn, signOut, signUp } from "@/lib/actions/auth.actions";
 
 /**
  * Custom hook para manejar la autenticación de usuarios.

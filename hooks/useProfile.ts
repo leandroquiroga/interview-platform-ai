@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { userStore } from "@/store/userStore";
-import { getCurrentUser } from "@/utils/functions/auth.action";
+import { getCurrentUser } from "@/lib/actions/auth.actions";
 
 export const useProfile = () => {
   const { user, setUser } = userStore();
