@@ -106,3 +106,13 @@ interface FormData {
   email: string;
   password: string;
 }
+
+interface BuildDynamicPromptParams {
+  role: string;
+  level: string;
+  techstack: string;
+  type: string;
+  amount: number;
+  language?: string;
+  questionStyle?: string;
+}
