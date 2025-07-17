@@ -52,7 +52,6 @@ export async function POST(request: Request) {
       prompt
     })
 
-    console.log({ questions });
     const interview = {
       role, type, level,
       techstack: techstack.split(','),

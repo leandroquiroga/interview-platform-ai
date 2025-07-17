@@ -50,3 +50,42 @@ export const buildDynamicPrompt = ({
     .filter(Boolean) // Eliminar instrucciones vacías (por ejemplo, si techstack está vacío)
     .join('\n');
 }
+
+export const buildDynamicPromptForQuestion = ({
+  role,
+  level,
+  techstack,
+  type,
+  amount,
+  language = "Español",
+  questionStyle = "concise",
+}: BuildDynamicPromptParams): string => {
+  // Definir partes del prompt según condiciones
+  const baseInstructions = `Genera ${amount} pares de preguntas y respuestas para una entrevista de trabajo en ${language}.`;
+  const roleInstruction = `El rol del puesto es ${role}.`;
+  const levelInstruction = `El nivel de experiencia requerido es ${level}.`;
+  const techstackInstruction = techstack ? `Las tecnologías utilizadas en el puesto son: ${techstack}.` : "";
+  const typeInstruction = `El enfoque de las preguntas debe ser principalmente ${type} (técnicas o conductuales).`;
+
+  // Ajustar el estilo de las preguntas y respuestas
+  const styleInstruction =
+    questionStyle === "detailed"
+      ? "Asegúrate de que las preguntas y respuestas sean detalladas e incluyan contexto para el candidato."
+      : "Asegúrate de que las preguntas y respuestas sean concisas y adecuadas para ser leídas por un asistente de voz.";
+
+  // Formato de salida
+  const outputInstruction = `No devuelvas la respuesta envuelta en un bloque de código como: \`\`\`json\n[{"pregunta": "Pregunta 1", "respuesta": "Respuesta 1"}, {"pregunta": "Pregunta 2", "respuesta": "Respuesta 2"}]\n\`\`\` En su lugar, devuelve SOLAMENTE: [{"pregunta": "Pregunta 1", "respuesta": "Respuesta 1"}, {"pregunta": "Pregunta 2", "respuesta": "Respuesta 2"}]`;
+
+  // Combinar todas las partes del prompt
+  return [
+    baseInstructions,
+    roleInstruction,
+    levelInstruction,
+    techstackInstruction,
+    typeInstruction,
+    styleInstruction,
+    outputInstruction,
+  ]
+    .filter(Boolean)
+    .join("\n");
+};
