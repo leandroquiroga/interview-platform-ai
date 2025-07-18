@@ -32,6 +32,16 @@ export async function POST(request: Request) {
     );
   }
 
+  // Validar que el rol sea uno de los permitidos
+  const validRoles = ["frontend", "backend", "fullstack", "devops", "ai_engineer", "mobile_developer"];
+  const normalizedRole = role.toLowerCase().replace(/\s+/g, '_');
+  if (!validRoles.includes(normalizedRole)) {
+    return Response.json(
+      { success: false, message: `El rol debe ser uno de: ${validRoles.join(", ")}.` },
+      { status: 400 }
+    );
+  }
+
   // Construir el prompt dinámico
   const prompt = buildDynamicPromptForQuestion({
     role,
@@ -49,8 +59,6 @@ export async function POST(request: Request) {
       prompt,
     });
 
-    console.log({ text });
-    const normalizedRole = role.toLowerCase().replace(/\s+/g, '-');
     // Parsear la respuesta como un arreglo de objetos con preguntas y respuestas
     const questionAnswerPairs = JSON.parse(text);
 
