@@ -53,6 +53,25 @@ export async function POST(request: Request) {
   });
 
   try {
+    // Verificar el límite de ejemplos generados por usuario 
+    const userRef = db.collection("users").doc(userid);
+    const userDoc = await userRef.get();
+
+    let totalExamples = 0;
+    if (userDoc.exists) {
+      const userLimits = userDoc.data()?.totalExamples || {};
+      totalExamples = userLimits.totalExamples || 0;
+    }
+
+    const MAX_EXAMPLES = parseInt(process.env.NEXT_PUBLIC_MAX_EXAMPLES_PER_USER || "0", 10);
+
+    if (totalExamples >= MAX_EXAMPLES) {
+      return Response.json(
+        { success: false, message: `Has alcanzado el límite máximo de ${MAX_EXAMPLES} ejemplos generados.` },
+        { status: 400 }
+      );
+    }
+
     // Generar las preguntas y respuestas con Gemini
     const { text } = await generateText({
       model: google("gemini-2.0-flash-001"),
@@ -73,14 +92,17 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
       cover: getRandomInterviewCover(),
       hasAnswerExamples: true,
+      totalExamples: totalExamples + 1,
     };
 
-    console.log(questionAnswerPairs);
-    // Guardar en la colección 'interview_questions'
-    await db.collection("interview_questions")
-      .doc(normalizedRole)
-      .collection("questions")
-      .add(interviewData);
+    // Obtener el documento actual del usuario
+    const currentQuestionsExamples = userDoc.exists ? (userDoc.data()?.questions || []) : [];
+    // Agregar la nueva entrevista al arreglo de interviews
+    const updatedInterviews = [...currentQuestionsExamples, interviewData];
+    // Actualizar el total de ejemplos generados por el usuario
+    await userRef.set({
+      questions: updatedInterviews
+    }, { merge: true });
 
     return Response.json({ success: true, message: "Preguntas generadas y guardadas correctamente." }, { status: 200 });
   } catch (error) {
