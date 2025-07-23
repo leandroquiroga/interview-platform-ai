@@ -35,7 +35,23 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+  // Validar que amount sea un número positivo
+  const count = parseInt(amount, 10);
+  if (isNaN(count) || count <= 0) {
+    return Response.json(
+      { success: false, message: "La cantidad de preguntas debe ser un número positivo." },
+      { status: 400 }
+    );
+  }
 
+  const validRoles = ["frontend", "backend", "fullstack", "devops", "ai_engineer", "mobile_developer"];
+  const normalizedRole = role.toLowerCase().replace(/\s+/g, '_');
+  if (!validRoles.includes(normalizedRole)) {
+    return Response.json(
+      { success: false, message: `El rol debe ser uno de: ${validRoles.join(", ")}.` },
+      { status: 400 }
+    );
+  }
   const prompt = buildDynamicPrompt({
     role,
     level,
@@ -47,6 +63,14 @@ export async function POST(request: Request) {
   });
 
   try {
+    const userRef = db.collection("users").doc(userid);
+    const userDoc = await userRef.get();
+
+    let totalInterview = 0;
+    if (userDoc.exists) {
+      const userLimits = userDoc.data()?.totalInterview || {};
+      totalInterview = userLimits.totalInterview || 0;
+    }
     const { text: questions } = await generateText({
       model: google('gemini-2.0-flash-001'),
       prompt
@@ -60,10 +84,22 @@ export async function POST(request: Request) {
       finalized: true,
       coverImage: getRandomInterviewCover(),
       createdAt: new Date().toISOString(),
+      totalInterview: totalInterview + 1,
     }
 
+    // Obtener el documento actual del usuario
+    const currentInterviews = userDoc.exists ? (userDoc.data()?.interviews || []) : [];
 
-    await db.collection('interviews').add(interview);
+    // Agregar la nueva entrevista al arreglo de interviews
+    const updatedInterviews = [...currentInterviews, interview];
+
+    // Actualizar el documento del usuario con el nuevo arreglo de interviews y el total
+    await userRef.set(
+      {
+        interviews: updatedInterviews,
+      },
+      { merge: true }
+    );
 
     return Response.json({ success: true }, { status: 200 });
   } catch (error) {
