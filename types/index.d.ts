@@ -116,3 +116,23 @@ interface BuildDynamicPromptParams {
   language?: string;
   questionStyle?: string;
 }
+
+// Representa un par pregunta-respuesta generado por IA
+export interface QuestionAnswerPair {
+  pregunta: string;
+  respuesta: string;
+}
+
+// Representa una entrevista generada por IA, incluyendo campos adicionales como cover, ejemplos y respuestas
+export interface InterviewQuestionAI {
+  role: string;
+  level: string;
+  techstack: string[];
+  type: string;
+  questions: QuestionAnswerPair[];
+  userId: string;
+  createdAt: string;
+  cover: string;
+  hasAnswerExamples: boolean;
+  totalExamples: number;
+}

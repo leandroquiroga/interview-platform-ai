@@ -4,6 +4,42 @@ import { buildDynamicPromptForQuestion } from "@/utils/functions";
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 
+export async function GET(request: Request) {
+
+  try {
+    // Obtener el userId desde los headers (ajusta según tu autenticación)
+    const userId = request.headers.get("x-user-id");
+    if (!userId) {
+      return new Response(JSON.stringify({
+        success: false,
+        message: "No autorizado. Falta el userId del usuario autenticado."
+      }), { status: 401, headers: { "Content-Type": "application/json" } });
+    }
+
+    // Consultar el documento del usuario
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (!userDoc.exists) {
+      return new Response(JSON.stringify({
+        success: false,
+        message: "Usuario no encontrado."
+      }), { status: 404, headers: { "Content-Type": "application/json" } });
+    }
+
+    const userData = userDoc.data();
+    const questions = userData?.questions || [];
+
+    return Response.json({
+      success: true,
+      data: questions,
+    }, { status: 200 });
+  } catch (error) {
+    console.error("Error en la solicitud GET:", error);
+    return Response.json(
+      { success: false, message: "Ocurrió un error al procesar la solicitud." },
+      { status: 500 }
+    );
+  }
+}
 export async function POST(request: Request) {
   const { role, level, techstack, type, amount, userid, language } = await request.json();
 
