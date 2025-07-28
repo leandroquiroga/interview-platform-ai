@@ -48,3 +48,6 @@ utils/functions/*.action.ts
 
 # vapi
 vapi.d.ts
+
+# firebase
+ai-interview-pro-a5e1e-firebase-adminsdk-fbsvc-a3555a141f.json

@@ -26,21 +26,33 @@ export const signUp = async (params: SignUpParams) => {
     await db.collection("users").doc(uid).set({
       name,
       email,
+      createdAt: new Date().toISOString(),
     })
 
     return {
       success: true,
       message: "Account created successfully. You can now sign in.",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let message = "An unexpected error occurred during sign up. Please try again later.";
+    let code = undefined;
+    let stack = undefined;
+    let details = undefined;
+    if (typeof error === "object" && error !== null) {
+      const err = error as { message?: string; code?: string; stack?: string; details?: string };
+      message = err.message || message;
+      code = err.code;
+      stack = err.stack;
+      details = err.details;
+    }
     console.error("Error during sign up:", {
-      message: error.message,
-      code: error.code,
-      stack: error.stack,
-      details: error.details,
+      message,
+      code,
+      stack,
+      details,
     });
 
-    if (error?.code === "auth/email-already-in-use") {
+    if (code === "auth/email-already-in-use") {
       return {
         success: false,
         message: "Email is already in use. Please try a different email.",
@@ -49,7 +61,7 @@ export const signUp = async (params: SignUpParams) => {
 
     return {
       success: false,
-      message: "An unexpected error occurred during sign up. Please try again later."
+      message
     }
   }
 }
@@ -76,7 +88,7 @@ export const signIn = async (params: SignInParams) => {
       };
 
     await setSession(idToken);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log(error);
     return {
       success: false,
