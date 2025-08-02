@@ -7,16 +7,53 @@ import Link from 'next/link';
 import FormFields from './FormFields';
 import { useAuth, useAuthForm } from '@/hooks';
 import { Loader2Icon } from 'lucide-react';
+import { FormType, AuthFormData } from '@/types';
+import FormFieldsOTP from './FormFieldsOPT';
+import { resendVerificationCode } from '@/lib/actions/verification.actions';
+import { toast } from 'sonner';
+import { useState, useEffect } from 'react';
 
 const AuthForm = ({ type }: { type: FormType }) => {
   const form = useAuthForm(type);
-  const { handleAuth, isLoading } = useAuth(type);
+  const { isLoading, handleAuth } = useAuth(type);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [resendLoading, setResendLoading] = useState(false);
+
+  useEffect(() => {
+    if (type === 'verify-code') {
+      const signupDataStr = sessionStorage.getItem('signup-data');
+      if (signupDataStr) {
+        const signupData = JSON.parse(signupDataStr);
+        setUserEmail(signupData.email);
+      }
+    }
+  }, [type]);
+
+  const handleResendCode = async () => {
+    if (!userEmail) {
+      toast.error('Email not found. Please start registration again.');
+      return;
+    }
+
+    setResendLoading(true);
+    const result = await resendVerificationCode(userEmail);
+
+    if (result.success) {
+      toast.success('Verification code resent successfully');
+    } else {
+      toast.error(result.message);
+    }
+    setResendLoading(false);
+  };
 
   const onSubmit = async (data: AuthFormData) => {
+    console.log('Form data:', data); // Depura todos los datos
     await handleAuth(data);
   };
 
   const isSignIn = type === 'sign-in';
+  const isChangePassword = type === 'change-password';
+  const isVerifyCode = type === 'verify-code';
 
   return (
     <div className="card-border lg:min-w-[566px]">
@@ -25,56 +62,126 @@ const AuthForm = ({ type }: { type: FormType }) => {
           <Image alt="logo" src="/logo.svg" height={32} width={38} />
           <h2 className="text-primary-100">AI InterviewPro</h2>
         </div>
-        <h3>Practice job interviewer</h3>
-        <Form {...form}>
+        <h3 className="text-center">Practice job interviewer</h3>
+        <Form {...(form as any)}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-6 mt-4 form"
           >
-            {!isSignIn && (
+            {isVerifyCode && (
+              <>
+                <div className="text-center space-y-2 mb-4">
+                  <p className="text-sm text-gray-600">
+                    We've sent a verification code to:
+                  </p>
+                  <p className="font-semibold text-primary-100">{userEmail}</p>
+                  <p className="text-xs text-gray-500">
+                    Check your email and enter the 6-digit code below. The code
+                    expires in 10 minutes.
+                  </p>
+                </div>
+                <FormFieldsOTP
+                  control={form.control as any}
+                  name="code"
+                  label="Verification Code"
+                />
+              </>
+            )}
+            {!isSignIn && !isChangePassword && !isVerifyCode && (
               <FormFields
-                control={form.control}
+                control={form.control as any}
                 name="name"
                 label="Username"
                 placeholder="Your Name"
                 type="text"
               />
             )}
-            <FormFields
-              control={form.control}
-              name="email"
-              label="Email"
-              placeholder="Your Email Address"
-              type="email"
-            />
-            <FormFields
-              control={form.control}
-              name="password"
-              label="Password"
-              placeholder="Enter your Password"
-              type="password"
-            />
-            {/* <FormFields isSignIn={isSignIn} form={form} /> */}
+            {!isChangePassword && !isVerifyCode && (
+              <FormFields
+                control={form.control as any}
+                name="email"
+                label="Email"
+                placeholder="Your Email Address"
+                type="email"
+              />
+            )}
+            {!isVerifyCode && !isChangePassword && (
+              <FormFields
+                control={form.control as any}
+                name="password"
+                label="Password"
+                placeholder="Enter your Password"
+                type="password"
+              />
+            )}
+            {isChangePassword && (
+              <>
+                <FormFields
+                  control={form.control as any}
+                  name="oldPassword"
+                  label="Current Password"
+                  placeholder="Enter your Current Password"
+                  type="password"
+                />
+                <FormFields
+                  control={form.control as any}
+                  name="newPassword"
+                  label="New Password"
+                  placeholder="Enter your New Password"
+                  type="password"
+                />
+              </>
+            )}
             <Button className="btn" type="submit" disabled={isLoading}>
               {isLoading ? (
                 <Loader2Icon className="animate-spin" />
               ) : isSignIn ? (
                 'Sign in'
+              ) : isVerifyCode ? (
+                'Verify code'
               ) : (
                 'Create account'
               )}
             </Button>
           </form>
         </Form>
-        <p className="text-center">
-          {isSignIn ? 'New to AI InterviewPro?' : 'Already have an account?'}
-          <Link
-            href={`${!isSignIn ? '/sign-in' : '/sign-up'}`}
-            className="font-bold text-user-primary ml-1"
+        {isVerifyCode && userEmail && (
+          <div className="text-center space-y-2 mb-4">
+            <p className="text-sm text-gray-600">
+              We've sent a verification code to:
+            </p>
+            <p className="font-semibold text-primary-100">{userEmail}</p>
+            <p className="text-xs text-gray-500">
+              Check your email and enter the 6-digit code below. The code
+              expires in 10 minutes.
+            </p>
+          </div>
+        )}
+        {isVerifyCode && (
+          <Button
+            onClick={handleResendCode}
+            disabled={resendLoading}
+            variant="link"
+            className="w-full mb-4"
           >
-            {isSignIn ? 'Create an account' : 'Sign in'}
-          </Link>
-        </p>
+            {resendLoading ? (
+              <Loader2Icon className="animate-spin" />
+            ) : (
+              'Resend code'
+            )}
+          </Button>
+        )}
+        {!isVerifyCode && (
+          <p className="text-center">
+            {isSignIn ? 'New to AI InterviewPro?' : 'Already have an account?'}
+            <Link
+              href={`${!isSignIn ? '/sign-in' : '/sign-up'}`}
+              className="font-bold text-user-primary ml-1"
+            >
+              {isSignIn ? 'Create an account' : 'Sign in'}
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );

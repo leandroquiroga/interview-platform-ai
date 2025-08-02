@@ -1,46 +1,45 @@
-import React from 'react';
+import { Control, Controller } from 'react-hook-form';
 import {
-  FormControl,
   FormItem,
   FormLabel,
+  FormControl,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
-import { Input } from './ui/input';
-import { Control, Controller, FieldValues, Path } from 'react-hook-form';
-
-interface FormFieldProps<T extends FieldValues> {
-  control: Control<T>;
-  name: Path<T>;
+interface FormFieldsProps {
+  control: Control<any>;
+  name: string;
   label: string;
-  placeholder?: string;
-  type: FormFieldType;
+  placeholder: string;
+  type: string;
 }
 
-const FormFields = <T extends FieldValues>({
+const FormFields = ({
   control,
-  label,
   name,
-  type = 'text',
+  label,
   placeholder,
-}: FormFieldProps<T>) => (
+  type,
+}: FormFieldsProps) => (
   <Controller
     control={control}
     name={name}
-    render={({ field }) => (
+    render={({ field, fieldState: { error } }) => (
       <FormItem>
-        <FormLabel className="label">{label}</FormLabel>
+        <FormLabel>{label}</FormLabel>
         <FormControl>
           <Input
-            className="input"
-            placeholder={placeholder}
             {...field}
+            placeholder={placeholder}
             type={type}
+            value={field.value || ''}
           />
         </FormControl>
-        <FormMessage />
+        {error && <FormMessage>{error.message}</FormMessage>}
       </FormItem>
     )}
   />
 );
+
 export default FormFields;
