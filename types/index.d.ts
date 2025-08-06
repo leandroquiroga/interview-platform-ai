@@ -1,3 +1,6 @@
+import { LucideProps } from "lucide-react";
+import { ForwardRefExoticComponent, RefAttributes } from "react";
+
 interface Feedback {
   id: string;
   interviewId: string;
@@ -83,7 +86,32 @@ interface SignUpParams {
   password: string;
 }
 
-type FormType = "sign-in" | "sign-up";
+interface SendVerificationCodeParams {
+  name: string;
+  email: string;
+}
+
+interface VerifyCodeParams {
+  email: string;
+  code: string;
+  password: string;
+}
+
+interface VerificationCodeData {
+  code: string;
+  name: string;
+  email: string;
+  expiresAt: string;
+  attempts: number;
+  createdAt: string;
+}
+
+interface ChangePasswordData {
+  oldPassword: string;
+  newPassword: string;
+}
+
+type FormType = "sign-in" | "sign-up" | "change-password" | "verify-code";
 
 interface InterviewFormProps {
   interviewId: string;
@@ -98,14 +126,31 @@ interface TechIconProps {
   techStack: string[];
 }
 
-type AuthFormData = z.infer<ReturnType<typeof authFormSchema>>;
 type FormFieldType = 'text' | 'email' | 'password' | 'file';
 
-interface FormData {
-  name?: string;
+// Tipos específicos para cada formulario
+interface SignInFormData {
   email: string;
   password: string;
 }
+
+interface SignUpFormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface ChangePasswordFormData {
+  oldPassword: string;
+  newPassword: string;
+}
+
+interface VerifyCodeFormData {
+  code: string;
+}
+
+// Tipo union para todos los datos de formulario
+type AuthFormData = SignInFormData | SignUpFormData | ChangePasswordFormData | VerifyCodeFormData;
 
 interface BuildDynamicPromptParams {
   role: string;
@@ -118,13 +163,13 @@ interface BuildDynamicPromptParams {
 }
 
 // Representa un par pregunta-respuesta generado por IA
-export interface QuestionAnswerPair {
+interface QuestionAnswerPair {
   pregunta: string;
   respuesta: string;
 }
 
 // Representa una entrevista generada por IA, incluyendo campos adicionales como cover, ejemplos y respuestas
-export interface InterviewQuestionAI {
+interface InterviewQuestionAI {
   role: string;
   level: string;
   techstack: string[];
@@ -135,4 +180,10 @@ export interface InterviewQuestionAI {
   cover: string;
   hasAnswerExamples: boolean;
   totalExamples: number;
+}
+
+interface ListItemsProps {
+  icon: ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>>;
+  href: string;
+  label: string;
 }
