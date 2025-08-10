@@ -36,9 +36,11 @@ interface CreateFeedbackParams {
 }
 
 interface User {
-  name: string;
+  name?: string;
   email: string;
   id: string;
+  interviews?: Interview[];
+  createdAt?: string;
 }
 
 interface InterviewCardProps {
@@ -155,7 +157,7 @@ type AuthFormData = SignInFormData | SignUpFormData | ChangePasswordFormData | V
 interface BuildDynamicPromptParams {
   role: string;
   level: string;
-  techstack: string;
+  techstack: string[] | string;
   type: string;
   amount: number;
   language?: string;
@@ -186,4 +188,24 @@ interface ListItemsProps {
   icon: ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>>;
   href: string;
   label: string;
+}
+
+interface ExtendedUser {
+  name?: string;
+  email: string;
+  id: string;
+  interviews?: Interview[];
+  createdAt?: string;
+}
+
+interface InterviewsListProps {
+  interviews: Interview[];
+}
+
+
+interface ChangePasswordDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (data: ChangePasswordFormData) => Promise<void>;
+  isLoading: boolean;
 }

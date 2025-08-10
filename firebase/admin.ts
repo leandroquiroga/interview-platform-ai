@@ -39,7 +39,7 @@ const initFirebaseAdmin = () => {
       auth: getAuth(),
       db,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error initializing Firebase Admin:", error);
     throw new Error(`Failed to initialize Firebase Admin: ${error.message}`);
   }
