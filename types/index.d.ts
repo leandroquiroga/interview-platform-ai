@@ -196,10 +196,26 @@ interface ExtendedUser {
   id: string;
   interviews?: Interview[];
   createdAt?: string;
+  questions?: Question[];
 }
 
 interface InterviewsListProps {
   interviews: Interview[];
+}
+
+interface Question {
+  cover: string;
+  createdAt: string;
+  hasAnswerExamples: boolean;
+  level: string;
+  role: string[];
+  totalExamples: number;
+  type: string;
+  userId: string;
+}
+
+interface QuestionsData {
+  questions: Question[];
 }
 
 
