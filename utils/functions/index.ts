@@ -1,11 +1,75 @@
 import { z } from 'zod'
+import {
+  User, Contact2, Blocks,
+  Shield,
+  Crown,
+  Trophy,
+} from 'lucide-react';
 
+import { BuildDynamicPromptParams, FormType } from '@/types';
+
+// Esquemas de validación individuales AuthForm
+export const signUpSchema = z.object({
+  name: z.string().min(3, 'Name is required'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
+});
+
+export const signInSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
+});
+
+export const changePasswordSchema = z.object({
+  oldPassword: z.string().min(6, 'Old password must be at least 6 characters long'),
+  newPassword: z.string().min(6, 'New password must be at least 6 characters long'),
+});
+
+export const verifyCodeSchema = z.object({
+  code: z.string().min(6, 'Verification code is required').max(6, 'Verification code must be 6 digits long'),
+});
+
+// Form validation schemaes ComboBoxForm
+export const InterviewFormSchema = z.object({
+  seniority: z.string({
+    required_error: 'Please select a seniority level.',
+  }),
+  rolePosition: z.string({
+    required_error: 'Please select a position.',
+  }),
+  technologies: z
+    .array(z.string())
+    .min(1, {
+      message: 'You must select at least one technology.',
+    })
+    .max(4, {
+      message: 'You can select up to 4 technologies maximum.',
+    }),
+  questionAmount: z
+    .number({
+      required_error: 'Please select the number of questions.',
+    })
+    .min(1, {
+      message: 'Number of questions must be at least 1.',
+    })
+    .max(5, {
+      message: 'Number of questions must be maximum 5.',
+    }),
+});
+// Función para obtener el esquema según el tipo
 export const authFormSchema = (type: FormType) => {
-  return z.object({
-    name: type === 'sign-up' ? z.string().min(3, 'Name is required') : z.string().optional(),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters long'),
-  })
+  switch (type) {
+    case 'sign-up':
+      return signUpSchema;
+    case 'sign-in':
+      return signInSchema;
+    case 'change-password':
+      return changePasswordSchema;
+    case 'verify-code':
+      return verifyCodeSchema;
+    default:
+      return signInSchema;
+  }
 }
 
 // Esta función construye un prompt dinámico para generar preguntas de entrevista de trabajo.
@@ -18,7 +82,7 @@ export const buildDynamicPrompt = ({
   techstack,
   type,
   amount,
-  language = 'English',
+  language,
   questionStyle = 'concise',
 }: BuildDynamicPromptParams): string => {
 
@@ -89,3 +153,77 @@ export const buildDynamicPromptForQuestion = ({
     .filter(Boolean)
     .join("\n");
 };
+
+export const items = [
+  { name: 'Profile', link: '/profile', icon: User },
+  { name: 'Interview Practice', link: '/interview-practice', icon: Blocks },
+  {
+    name: 'Interview',
+    link: '/interview',
+    icon: Contact2,
+  },
+];
+
+// Generar avatar aleatorio usando la primera letra del nombre y email como seed
+export const getAvatarUrl = (name: string | undefined, email: string) => {
+  const nameChar = name?.charAt(0).toLowerCase() || 'u';
+  const seed = nameChar + email.length.toString();
+  return `https://api.dicebear.com/7.x/initials/svg?seed=${seed}&backgroundColor=3b82f6&textColor=ffffff`;
+};
+
+export const getUserInitials = (name: string | undefined) => {
+  if (!name) return 'U';
+  return name
+    .split(' ')
+    .map(word => word.charAt(0))
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+export const getMembershipBadge = (interviewCount: number) => {
+  if (interviewCount >= 50) {
+    return { label: 'Experto', variant: 'default' as const, icon: Crown };
+  } else if (interviewCount >= 20) {
+    return { label: 'Avanzado', variant: 'secondary' as const, icon: Trophy };
+  } else if (interviewCount >= 5) {
+    return { label: 'Intermedio', variant: 'outline' as const, icon: Shield };
+  }
+  return { label: 'Principiante', variant: 'outline' as const, icon: User };
+};
+
+// Application data configuration
+export const TECHNOLOGIES = [
+  { label: 'JavaScript', value: 'javascript' },
+  { label: 'TypeScript', value: 'typescript' },
+  { label: 'React', value: 'react' },
+  { label: 'Next.js', value: 'next.js' },
+  { label: 'Node.js', value: 'node.js' },
+  { label: 'Express.js', value: 'express.js' },
+  { label: 'MongoDB', value: 'mongodb' },
+  { label: 'Git', value: 'git' },
+] as const;
+
+export const SENIORITY_LEVELS = [
+  { label: 'Junior', value: 'junior' },
+  { label: 'Semi Senior', value: 'mid' },
+  { label: 'Senior', value: 'senior' },
+  { label: 'Lead', value: 'lead' },
+  { label: 'Expert', value: 'expert' },
+] as const;
+
+export const ROLE_POSITIONS = [
+  { label: 'Frontend Developer', value: 'frontend-developer' },
+  { label: 'Backend Developer', value: 'backend-developer' },
+  { label: 'Fullstack Developer', value: 'fullstack-developer' },
+  { label: 'Mobile Developer', value: 'mobile-developer' },
+] as const;
+
+export const QUESTION_AMOUNTS = [
+  { label: '1 question', value: 1 },
+  { label: '2 questions', value: 2 },
+  { label: '3 questions', value: 3 },
+  { label: '4 questions', value: 4 },
+  { label: '5 questions', value: 5 },
+] as const;
+
