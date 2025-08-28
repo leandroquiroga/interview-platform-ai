@@ -1,26 +1,48 @@
 "use client";
 import { useForm } from "react-hook-form";
-import { authFormSchema } from "@/utils/functions"
+import {
+  signInSchema,
+  signUpSchema,
+  changePasswordSchema,
+  verifyCodeSchema
+} from "@/utils/functions";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { FormType } from "@/types";
 
 /**
  * Custom hook para manejar formularios de autenticación.
  * Utiliza react-hook-form junto con validación usando Zod.
- * 
- * @param type Tipo de formulario de autenticación (por ejemplo, login o registro).
- * @returns Métodos y estados del formulario proporcionados por useForm.
  */
+export function useAuthForm(type: FormType) {
+  switch (type) {
+    case 'sign-in':
+      return useForm({
+        resolver: zodResolver(signInSchema),
+        defaultValues: { email: '', password: '' },
+      });
 
-export const useAuthForm = (type: FormType) => {
-  const formSchema = authFormSchema(type);
-  const form = useForm<AuthFormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-    },
-  })
+    case 'sign-up':
+      return useForm({
+        resolver: zodResolver(signUpSchema),
+        defaultValues: { name: '', email: '', password: '' },
+      });
 
-  return form;
+    case 'change-password':
+      return useForm({
+        resolver: zodResolver(changePasswordSchema),
+        defaultValues: { oldPassword: '', newPassword: '' },
+      });
+
+    case 'verify-code':
+      return useForm({
+        resolver: zodResolver(verifyCodeSchema),
+        defaultValues: { code: '' },
+      });
+
+    default:
+      return useForm({
+        resolver: zodResolver(signInSchema),
+        defaultValues: { email: '', password: '' },
+      });
+  }
 }
