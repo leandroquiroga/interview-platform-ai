@@ -46,10 +46,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
     setResendLoading(false);
   };
 
-  const onSubmit = async (data: AuthFormData) => {
-    console.log('Form data:', data); // Depura todos los datos
-    await handleAuth(data);
-  };
+  const onSubmit = async (data: AuthFormData) => await handleAuth(data);
 
   const isSignIn = type === 'sign-in';
   const isChangePassword = type === 'change-password';
@@ -70,16 +67,6 @@ const AuthForm = ({ type }: { type: FormType }) => {
           >
             {isVerifyCode && (
               <>
-                <div className="text-center space-y-2 mb-4">
-                  <p className="text-sm text-gray-600">
-                    We've sent a verification code to:
-                  </p>
-                  <p className="font-semibold text-primary-100">{userEmail}</p>
-                  <p className="text-xs text-gray-500">
-                    Check your email and enter the 6-digit code below. The code
-                    expires in 10 minutes.
-                  </p>
-                </div>
                 <FormFieldsOTP
                   control={form.control as any}
                   name="code"

@@ -196,7 +196,7 @@ interface ExtendedUser {
   id: string;
   interviews?: Interview[];
   createdAt?: string;
-  questions?: Question[];
+  questions?: InterviewQuestionAI[];
 }
 
 interface InterviewsListProps {
