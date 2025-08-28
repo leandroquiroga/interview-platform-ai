@@ -1,28 +1,28 @@
-import { db } from "@/firebase/admin";
+import { db, auth } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
 import { buildDynamicPromptForQuestion } from "@/utils/functions";
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
+import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
-
   try {
-    // Obtener el userId desde los headers (ajusta según tu autenticación)
+    // Obtener el userId desde los headers
     const userId = request.headers.get("x-user-id");
     if (!userId) {
-      return new Response(JSON.stringify({
+      return Response.json({
         success: false,
         message: "No autorizado. Falta el userId del usuario autenticado."
-      }), { status: 401, headers: { "Content-Type": "application/json" } });
+      }, { status: 401 });
     }
 
     // Consultar el documento del usuario
     const userDoc = await db.collection("users").doc(userId).get();
     if (!userDoc.exists) {
-      return new Response(JSON.stringify({
+      return Response.json({
         success: false,
         message: "Usuario no encontrado."
-      }), { status: 404, headers: { "Content-Type": "application/json" } });
+      }, { status: 404 });
     }
 
     const userData = userDoc.data();
@@ -41,7 +41,39 @@ export async function GET(request: Request) {
   }
 }
 export async function POST(request: Request) {
-  const { role, level, techstack, type, amount, userid, language } = await request.json();
+  // 1. Obtener la cookie de sesión
+  const cookiesStore = await cookies();
+  const sessionCookie = cookiesStore.get('session')?.value;
+
+  console.log("=== POST /api/vapi/questions ===");
+  console.log("Session cookie exists:", !!sessionCookie);
+  console.log("Session cookie length:", sessionCookie?.length || 0);
+
+  if (!sessionCookie) {
+    console.log("❌ No session cookie found");
+    return Response.json(
+      {
+        success: false,
+        message: 'No se proporcionó una sesión válida. Asegúrate de haber iniciado sesión.',
+      },
+      { status: 401 }
+    );
+  }
+
+  // 2. Verificar la cookie y obtener el userId
+  let userid: string;
+  try {
+    const decodedToken = await auth.verifySessionCookie(sessionCookie, true);
+    userid = decodedToken.uid; // El userId del usuario autenticado
+  } catch (error) {
+    console.error("❌ Error verificando sesión:", error);
+    return Response.json(
+      { success: false, message: 'Sesión inválida o expirada. Por favor, inicia sesión nuevamente.' },
+      { status: 401 }
+    );
+  }
+
+  const { role, level, techstack, type, amount, language } = await request.json();
 
   // Validar los datos de entrada
   if (!role || !level || !techstack || !type || !amount || !userid) {
@@ -70,7 +102,8 @@ export async function POST(request: Request) {
 
   // Validar que el rol sea uno de los permitidos
   const validRoles = ["frontend", "backend", "fullstack", "devops", "ai_engineer", "mobile_developer"];
-  const normalizedRole = role.toLowerCase().replace(/\s+/g, '_');
+  const normalizedRole = role.toLowerCase().split("-")[0]
+  console.log({ normalizedRole });
   if (!validRoles.includes(normalizedRole)) {
     return Response.json(
       { success: false, message: `El rol debe ser uno de: ${validRoles.join(", ")}.` },

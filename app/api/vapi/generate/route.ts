@@ -29,9 +29,14 @@ export async function POST(request: Request) {
   }
 
   // Validar que techstack sea una cadena
-  if (typeof techstack !== 'string') {
+  if (
+    !(
+      (typeof techstack === 'string' && techstack.trim().length > 0) ||
+      (Array.isArray(techstack) && techstack.every(item => typeof item === 'string' && item.trim().length > 0))
+    )
+  ) {
     return Response.json(
-      { success: false, message: 'Techstack must be a string.' },
+      { success: false, message: 'Techstack must be a non-empty string or an array of non-empty strings.' },
       { status: 400 }
     );
   }
@@ -76,9 +81,16 @@ export async function POST(request: Request) {
       prompt
     })
 
+    const techstacks = Array.isArray(techstack)
+      ? techstack.map(item => item.trim())
+      : techstack.split(',').map(item => item.trim());
+
+
     const interview = {
-      role, type, level,
-      techstack: techstack.split(','),
+      role,
+      type,
+      level,
+      techstack: techstacks,
       questions: JSON.parse(questions),
       userId: userid,
       finalized: true,
